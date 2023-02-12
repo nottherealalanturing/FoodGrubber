@@ -1,0 +1,206 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Order;
+use App\Models\Product;
+use Bunny\Storage\Client;
+use Bunny\Storage\Region;
+use Illuminate\Http\Request;
+use App\Models\ProductCategory;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\BaseController;
+
+class ProductController extends BaseController
+{
+    public $apiAccessKey;
+    public $storageZoneName;
+    public $storageZoneRegion;
+    public $client;
+
+    public function __construct()
+    {
+        $this->apiAccessKey = config('services.bunnynetcdn.api_access_key');
+        $this->storageZoneName = config('services.bunnynetcdn.storage_zone_name');
+        $this->storageZoneRegion = config('services.bunnynetcdn.storage_zone_region');
+
+        if ($this->apiAccessKey && $this->storageZoneName) {
+            $this->client = new Client($this->apiAccessKey, $this->storageZoneName, Region::LONDON);
+        }
+    }
+
+    public function index()
+    {
+        $pageTitle = 'Products';  // Set the page title for this view
+        $userStoreCheck = $this->checkUserStore();
+        $newOrdersCount = $userStoreCheck['newOrdersCount'];
+        $categories = ProductCategory::pluck('category');
+        $products = Auth::user()->product()->paginate(20);
+        return view('products', compact('pageTitle', 'userStoreCheck', 'categories', 'products', 'newOrdersCount'));
+    }
+
+    // public function add(Request $request)
+    // {
+    //     $client = new Client('bfad6a1b-862d-4eac-b31c7c71e48b-46fa-43e2', 'foodygreen', \Bunny\Storage\Region::FALKENSTEIN);
+
+    //     $product = new Product([
+    //         'store_id' => Auth::user()->userstore->id,
+    //         'name' => $request->name,
+    //         'price' => $request->price,
+    //         'cuisine' => $request->cuisine,
+    //         'category' => $request->category,
+    //         'description' => $request->description,
+    //         'measurement' => $request->measurement,
+    //     ]);
+
+    //     // $this->uploadImages($request);
+    //     // $this->uploadImages($request, $product);
+
+    //     // if ($request->hasFile('image1')) {
+    //     //     $image1Name = time() . '_1.' . $request->image1->getClientOriginalExtension();
+
+    //     //     $client->upload('/path/to/local/file.txt', 'remote/path/hello-world.txt');
+
+    //     //     $request->image1->move(public_path('img/products'), $image1Name);
+    //     //     $product->image1 = $image1Name;
+    //     // }
+
+    //     if ($request->hasFile('image1')) {
+    //         $fileName = $this->generateUniqueFilename($request->image1->getClientOriginalExtension());
+    //         $client->upload($request->image1->getRealPath(), 'images/products' . $fileName); // Use getRealPath for local file path
+    //         $product->image1 = $fileName;
+    //     }
+
+
+    //     // if ($request->hasFile('image2')) {
+    //     //     $image2Name = time() . '_2.' . $request->image2->getClientOriginalExtension();
+    //     //     $request->image2->move(public_path('img/products'), $image2Name);
+    //     //     $product->image2 = $image2Name;
+    //     // }
+
+    //     $product->save();
+
+    //     return back()->with([
+    //         'type' => 'success',
+    //         'message' => "Product Added successfully"
+    //     ]);
+
+    //     // return back()->with('success', "Product Added successfully");
+    // }
+
+    public function add(Request $request)
+    {
+        $fields = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'price' => ['required', 'numeric'],
+            'category' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'measurement' => ['required', 'string', 'max:255'],
+            'image1' => ['nullable', 'image', 'max:4096'],
+        ]);
+
+        $product = new Product([
+            'store_id' => Auth::user()->userstore->id,
+            'name' => $fields['name'],
+            'price' => $fields['price'],
+            'category' => $fields['category'],
+            'description' => $fields['description'],
+            'measurement' => $fields['measurement'],
+        ]);
+
+        if ($request->hasFile('image1')) {
+            // Get the file extension
+            $extension = $request->image1->getClientOriginalExtension();
+            // Generate a unique filename
+            $imageName = time() . '_1.' . $extension;
+            if ($this->client) {
+                $this->client->upload($request->file('image1')->getRealPath(), 'images/products/' . $imageName);
+                $product->image1 = 'https://foodgre.b-cdn.net/images/products/' . $imageName;
+            } else {
+                $path = $request->file('image1')->storeAs('products', $imageName, 'public');
+                $product->image1 = Storage::url($path);
+            }
+        }
+
+        $product->save();
+
+        return back()->with('success', 'Product added successfully');
+    }
+
+    // private function uploadImages(Request $request, Product $product)
+    // {
+    //     if ($request->hasFile('image1')) {
+    //         $fileName = $this->generateUniqueFilename($request->image1->getClientOriginalExtension());
+    //         $this->bunnyClient->upload($request->image1->getRealPath(), 'path/to/product/images/' . $fileName); // Use getRealPath for local file path
+    //         $product->image1 = $fileName;
+    //     }
+
+    //     if ($request->hasFile('image2')) {
+    //         $fileName = $this->generateUniqueFilename($request->image2->getClientOriginalExtension());
+    //         $this->bunnyClient->upload($request->image2->getRealPath(), 'path/to/product/images/' . $fileName);
+    //         $product->image2 = $fileName;
+    //     }
+    // }
+
+    // private function generateUniqueFilename($extension)
+    // {
+    //     return time() . '.' . $extension;
+    // }
+
+    // Edit Logic (product.edit route)
+    public function update(Request $request, $id)
+    {
+        $product = Product::findOrFail($id);
+
+        $fields = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'price' => ['required', 'numeric'],
+            'category' => ['required', 'string', 'max:255'],
+            'description' => ['required', 'string'],
+            'measurement' => ['required', 'string', 'max:255'],
+            'image1' => ['nullable', 'image', 'max:4096'],
+        ]);
+
+        if ($product->store_id !== optional(Auth::user()->userstore)->id) {
+            abort(403);
+        }
+
+        $product->fill($fields);
+
+        if ($request->hasFile('image1')) {
+            $extension = $request->image1->getClientOriginalExtension();
+            $imageName = time() . '_edit.' . $extension;
+
+            if ($this->client) {
+                $this->client->upload($request->file('image1')->getRealPath(), 'images/products/' . $imageName);
+                $product->image1 = 'https://foodgre.b-cdn.net/images/products/' . $imageName;
+            } else {
+                $path = $request->file('image1')->storeAs('products', $imageName, 'public');
+                $product->image1 = Storage::url($path);
+            }
+        }
+
+        $product->save();
+
+        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
+    }
+
+    // public function deactivate($id)
+    // {
+    //     $product = Product::find($id);
+    //     $product->active = 0;
+    //     $product->save();
+
+    //     return response()->json(['success' => true]);
+    // }
+
+    // public function destroy($id)
+    // {
+    //     $product = Product::find($id);
+    //     $product->delete();
+
+    //     return response()->json(['success' => true]);
+    // }
+}
