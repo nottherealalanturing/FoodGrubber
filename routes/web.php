@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AppController;
+use App\Http\Controllers\InsightsController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -55,7 +56,13 @@ Route::middleware('auth')->group(function () {
 // Route::middleware('auth')->group(function () {
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::put('/orders/{order}/accept', [OrderController::class, 'acceptOrder'])->name('orders.order.accept');
+    Route::put('/orders/{order}/deliver', [OrderController::class, 'markDelivered'])->name('orders.order.deliver');
     Route::post('/orders/demo', [OrderController::class, 'generateDemoOrders'])->name('orders.demo');
+
+    Route::get('/feedback', [InsightsController::class, 'feedback'])->name('feedback.index');
+    Route::post('/feedback/demo', [InsightsController::class, 'generateDemoFeedback'])->name('feedback.demo');
+    Route::get('/earnings', [InsightsController::class, 'earnings'])->name('earnings.index');
+    Route::get('/reports', [InsightsController::class, 'reports'])->name('reports.index');
 });
 
 // Route::get('/welcome', function () {

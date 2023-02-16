@@ -180,6 +180,7 @@
 
     {{-- custom script --}}
     <script src="{{ asset('custom.js') }}"></script>
+    @stack('scripts')
     
   </body>
 </html>

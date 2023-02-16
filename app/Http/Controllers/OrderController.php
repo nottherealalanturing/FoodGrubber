@@ -17,8 +17,9 @@ class OrderController extends BaseController
             ->where('store_id', Auth::user()->userstore->id)
             ->get();
 
-        $deliveredOrders = Order::where('order_status', 'delivered')
+        $historyOrders = Order::whereIn('order_status', ['processing', 'delivered'])
             ->where('store_id', Auth::user()->userstore->id)
+            ->orderByDesc('order_date')
             ->get();
 
         // Loop through each order to fetch its corresponding items
@@ -26,8 +27,8 @@ class OrderController extends BaseController
             $newOrder->items = $newOrder->orderItem()->get();
         }
 
-        foreach ($deliveredOrders as $deliveredOrder) {
-            $deliveredOrder->items = $deliveredOrder->orderItem()->get();
+        foreach ($historyOrders as $historyOrder) {
+            $historyOrder->items = $historyOrder->orderItem()->get();
         }
 
         $pageTitle = 'Orders';
@@ -39,7 +40,7 @@ class OrderController extends BaseController
             'userStoreCheck',
             'newOrders',
             'newOrdersCount',
-            'deliveredOrders'
+            'historyOrders'
         ));
     }
 
@@ -47,6 +48,12 @@ class OrderController extends BaseController
     {
         $order->update(['order_status' => 'processing']);
         return redirect()->route('orders.index'); 
+    }
+
+    public function markDelivered(Order $order)
+    {
+        $order->update(['order_status' => 'delivered']);
+        return redirect()->route('orders.index')->with('success', 'Order marked as delivered.');
     }
 
     public function generateDemoOrders()

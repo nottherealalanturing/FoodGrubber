@@ -6,7 +6,7 @@
         <img class="card-img-top" src="{{ $product->image1 }}" alt="Product Image"
             style="height: 200px; object-fit: cover;" />
     @else
-        <img class="card-img-top" src="{{ asset('img/products/no-product-image.png') }}" alt="Product Image"
+        <img class="card-img-top" src="{{ asset('img/default_store_logo.jpg') }}" alt="Product Image"
             style="height: 200px; object-fit: cover;" />
     @endif
 

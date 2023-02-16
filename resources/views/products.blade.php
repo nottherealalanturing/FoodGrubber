@@ -9,6 +9,12 @@
                 {{ session('error') ? session('error') : session('success') }}
             </div>
         @endif
+
+        @if ($errors->any())
+            <div class="alert alert-danger">
+                {{ $errors->first() }}
+            </div>
+        @endif
         
         <div class="row">
             <div class="col-md-12">
@@ -148,7 +154,6 @@
         $(document).ready(function() {
             $('#productSearch').on('input', function() {
                 var searchKeyword = $(this).val().toLowerCase();
-                alert(searchKeyword);
 
                 $('.product-card').each(function() {
                     var productName = $(this).data('name').toLowerCase();

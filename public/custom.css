@@ -2,32 +2,118 @@
     --foody-primary-color: #fef301;
     --foody-secondary-color: #01c324;
     --foody-tertiary-color: #454545;
+    --foody-surface-color: #fbfbf4;
 }
 
-/* products page */
+body {
+    background: linear-gradient(180deg, #fbfbf4 0%, #f5f7f2 100%);
+}
+
+.layout-page {
+    background: transparent;
+}
+
+.dashboard-card {
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 14px 34px rgba(69, 69, 69, 0.08);
+}
+
+.dashboard-label {
+    color: #7a7a72;
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.55rem;
+    text-transform: uppercase;
+}
+
+.dashboard-value {
+    color: var(--foody-tertiary-color);
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.45rem;
+}
+
+.dashboard-subtext {
+    color: #777;
+}
+
+.dashboard-hero {
+    background:
+        radial-gradient(circle at top right, rgba(1, 195, 36, 0.18), transparent 28%),
+        linear-gradient(135deg, #fffef1 0%, #ffffff 65%);
+    border: 0;
+    border-radius: 22px;
+    box-shadow: 0 18px 40px rgba(69, 69, 69, 0.08);
+}
+
+.metric-pill {
+    align-items: center;
+    background: rgba(1, 195, 36, 0.1);
+    border-radius: 999px;
+    color: var(--foody-tertiary-color);
+    display: inline-flex;
+    font-size: 0.85rem;
+    font-weight: 700;
+    gap: 0.45rem;
+    padding: 0.55rem 0.9rem;
+}
+
+.section-card {
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 14px 34px rgba(69, 69, 69, 0.06);
+}
+
+.report-row {
+    border-bottom: 1px solid #f0f0eb;
+    padding: 0.75rem 0;
+}
+
+.report-row:last-child {
+    border-bottom: 0;
+    padding-bottom: 0;
+}
+
+.product-card {
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 14px 28px rgba(69, 69, 69, 0.08);
+    overflow: hidden;
+}
 
 .btn-icon {
     background-color: transparent;
-    /* Transparent background */
     border: none;
-    /* No border */
     padding: 0;
-    /* Remove default padding */
 }
 
 .btn-icon .tf-icons {
     color: inherit;
-    /* Inherit color from button */
     font-size: 1.25rem;
-    /* Adjust icon size as needed */
 }
 
 .btn-icon:hover {
     background-color: inherit;
-    /* Take background color from icon */
 }
 
 .btn-icon:hover .tf-icons {
     color: #fff;
-    /* White icon color on hover */
+}
+
+.table > :not(caption) > * > * {
+    padding: 0.95rem 1rem;
+}
+
+.badge.bg-label-warning {
+    background: rgba(254, 243, 1, 0.24) !important;
+    color: #6f6100 !important;
+}
+
+@media (max-width: 768px) {
+    .dashboard-value {
+        font-size: 1.6rem;
+    }
 }

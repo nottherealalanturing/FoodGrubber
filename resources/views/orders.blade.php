@@ -34,7 +34,7 @@
                             <button type="button" class="nav-link" role="tab" data-bs-toggle="tab"
                                 data-bs-target="#navs-pills-top-profile" aria-controls="navs-pills-top-home"
                                 aria-selected="true">
-                                Orders
+                                Order History
                             </button>
                         </li>
                     </ul>
@@ -121,24 +121,39 @@
                                             <th>Date / Time</th>
                                             <th>Amount</th>
                                             <th>Delivery Address</th>
+                                            <th>Status</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody class="table-border-bottom-0">
-                                        @foreach ($deliveredOrders as $deliveredOrder)
+                                        @forelse ($historyOrders as $historyOrder)
                                             <tr>
                                                 <td>{{ $loop->index + 1 . '.' }}</td>
-                                                <td>{{ $deliveredOrder->order_date }}</td>
+                                                <td>{{ $historyOrder->order_date }}</td>
                                                 <td>
-                                                    &#8358; {{ $deliveredOrder->total_amount }}
+                                                    &#8358; {{ $historyOrder->total_amount }}
                                                 </td>
-                                                <td>{{ $deliveredOrder->delivery_address }}</td> {{-- todo use ellisis for address --}}
+                                                <td>{{ $historyOrder->delivery_address }}</td>
                                                 <td>
-                                                    <a href="#"
-                                                        style="color: var(--foody-secondary-color);">View</a>
+                                                    <span class="badge {{ $historyOrder->order_status === 'delivered' ? 'bg-label-success' : 'bg-label-info' }}">
+                                                        {{ ucfirst($historyOrder->order_status) }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    @if ($historyOrder->order_status === 'processing')
+                                                        <form action="{{ route('orders.order.deliver', $historyOrder->id) }}" method="POST">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <button type="submit" class="btn btn-sm btn-outline-primary">Mark Delivered</button>
+                                                        </form>
+                                                    @else
+                                                        <span class="text-muted">Completed</span>
+                                                    @endif
                                                 </td>
                                             </tr>
-                                        @endforeach
+                                        @empty
+                                            <tr><td colspan="6"><p class="text-center p-2">No processed orders yet</p></td></tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
